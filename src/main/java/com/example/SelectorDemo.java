@@ -24,7 +24,11 @@ public class SelectorDemo {
 				"/Root/Child1",
 				"/Root/Child2",
 				"/Root/*",
-				"/Root/Child2/GrandChild2"
+				"/Root/Child2/GrandChild2",
+				// New wildcard expressions
+				"/*/Child2",
+				"/*/*/GrandChild2",
+				"/*/*/*"
 		};
 
 		for (String expression : expressions) {

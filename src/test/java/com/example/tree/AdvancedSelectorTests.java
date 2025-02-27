@@ -36,6 +36,24 @@ public class AdvancedSelectorTests extends TreeSelectorTestBase {
 	}
 
 	@Test
+	@DisplayName("Test wildcard at root level")
+	void testWildcardAtRootLevel() {
+		List<TreeNode> results = selector.select("/*/Child2");
+
+		assertEquals(1, results.size());
+		assertEquals("Child2", results.get(0).getName());
+	}
+
+	@Test
+	@DisplayName("Test multiple wildcards in path")
+	void testMultipleWildcardsInPath() {
+		List<TreeNode> results = selector.select("/*/*/GrandChild2");
+
+		assertEquals(1, results.size());
+		assertEquals("GrandChild2", results.get(0).getName());
+	}
+
+	@Test
 	@DisplayName("Test invalid selector syntax")
 	void testInvalidSelectorSyntax() {
 		List<TreeNode> results = selector.select("Root/Child1");  // Missing leading slash
@@ -76,5 +94,25 @@ public class AdvancedSelectorTests extends TreeSelectorTestBase {
 
 		assertEquals(1, results.size());
 		assertEquals("GrandChild2", results.get(0).getName());
+	}
+
+	@Test
+	@DisplayName("Root wildcard selectors")
+	void testRootWildcard() {
+		List<TreeNode> results = selector.select("/*");
+
+		assertEquals(1, results.size());
+		assertEquals("Root", results.get(0).getName());
+	}
+
+	@Test
+	@DisplayName("Complete wildcard path")
+	void testCompleteWildcardPath() {
+		List<TreeNode> results = selector.select("/*/*/*");
+
+		assertEquals(3, results.size());
+		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild1")));
+		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild2")));
+		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild3")));
 	}
 }

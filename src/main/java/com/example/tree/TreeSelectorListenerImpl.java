@@ -21,19 +21,27 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 		currentNodes.clear();
 		resultNodes.clear();
 
-		// Safely get the root node name, return if it's null
-		if (ctx.nodeName() == null) {
+		// Handle the root part (first segment) of the path
+		if (ctx.nodeName() == null && ctx.wildcard() == null) {
 			return;
 		}
 
-		String rootName = ctx.nodeName().getText();
-		if (rootNode.getName().equals(rootName)) {
-			currentNodes.add(rootNode);
+		boolean isWildcard = ctx.wildcard() != null;
 
-			// If there are no nodeSelectors, the root itself is the result
-			if (ctx.nodeSelector().isEmpty()) {
-				resultNodes.add(rootNode);
+		if (isWildcard) {
+			// Wildcard at root matches the root node itself
+			currentNodes.add(rootNode);
+		} else {
+			// Named node at root
+			String rootName = ctx.nodeName().getText();
+			if (rootNode.getName().equals(rootName)) {
+				currentNodes.add(rootNode);
 			}
+		}
+
+		// If there are no nodeSelectors, the current nodes are the result
+		if (ctx.nodeSelector().isEmpty()) {
+			resultNodes.addAll(currentNodes);
 		}
 	}
 

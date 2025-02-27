@@ -2,7 +2,7 @@ grammar TreeSelector;
 
 // Parser rules
 selector
-    : '/' nodeName (nodeSelector)* EOF
+    : '/' (nodeName | wildcard) (nodeSelector)* EOF
     ;
 
 nodeSelector
