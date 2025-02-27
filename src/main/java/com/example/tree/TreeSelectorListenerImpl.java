@@ -37,9 +37,12 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 			// Wildcard at root matches the root node itself
 			currentNodes.add(rootNode);
 		} else if (isPlaceholder) {
-			// Placeholder at root - get all nodes in the tree
+			// Placeholder at root - get all nodes in the tree except the root itself
 			List<TreeNode> allNodes = new ArrayList<>();
-			collectNodesRecursively(rootNode, allNodes);
+			for (TreeNode child : rootNode.getChildren()) {
+				allNodes.add(child);
+				collectDescendantsRecursively(child, allNodes);
+			}
 			currentNodes.addAll(allNodes);
 		} else {
 			// Named node at root
@@ -73,8 +76,10 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 		if (isPlaceholder) {
 			// For placeholder, we need to find all descendants of current nodes
 			for (TreeNode node : currentNodes) {
+				// For chained placeholders, we need a fresh set of processed nodes
+				Set<TreeNode> localProcessedNodes = new HashSet<>();
 				List<TreeNode> descendants = new ArrayList<>();
-				collectDescendantsRecursively(node, descendants);
+				collectDescendantsRecursivelyLocal(node, descendants, localProcessedNodes);
 				matchingNodes.addAll(descendants);
 			}
 		} else {
@@ -114,22 +119,21 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	}
 
 	/**
-	 * Recursively collect all nodes in the tree.
+	 * Recursively collect all descendants of a node (excluding the node itself).
+	 * Uses a local set of processed nodes to allow for chained placeholders.
 	 *
 	 * @param node The current node to process
-	 * @param allNodes The list to collect all nodes into
+	 * @param descendants The list to collect descendants into
+	 * @param localProcessedNodes A local set to track processed nodes for this operation
 	 */
-	private void collectNodesRecursively(TreeNode node, List<TreeNode> allNodes) {
-		// Prevent processing the same node twice
-		if (processedNodes.contains(node)) {
-			return;
-		}
-
-		processedNodes.add(node);
-		allNodes.add(node);
-
+	private void collectDescendantsRecursivelyLocal(TreeNode node, List<TreeNode> descendants, Set<TreeNode> localProcessedNodes) {
 		for (TreeNode child : node.getChildren()) {
-			collectNodesRecursively(child, allNodes);
+			// Prevent processing the same node twice within this collection operation
+			if (!localProcessedNodes.contains(child)) {
+				localProcessedNodes.add(child);
+				descendants.add(child);
+				collectDescendantsRecursivelyLocal(child, descendants, localProcessedNodes);
+			}
 		}
 	}
 
