@@ -33,27 +33,27 @@ public class SelectorDemo {
 				// Attribute selectors
 				"/Root/*{type=component}",
 				"/Root/*{type=component, variant=primary}",
-				"/Root/*{type=component,version=*}",
-
-				// Multiple selectors (pipe-separated)
-				"/Root/Child1|/Root/Child2",
-				"/Root/*{variant=primary}|/Root/*{variant=secondary}",
 
 				// Deep traversal selectors
 				"**/*",                           // Select all nodes in the tree
 				"**/Child2",                      // Select Child2 node
 				"**/*{variant=secondary}",        // Select nodes with variant=secondary
-				"**/GrandChild1",                 // Select all GrandChild1 nodes
 
 				// Placeholder selectors
 				"/~~",                            // All nodes except root
 				"/Root/~~/*{version=3.0.0}",      // Nodes with version=3.0.0 under Root
 				"/Root/Child2/~~",                // All nodes under Child2
-				"/Root/~~/GrandChild2",           // GrandChild2 at any level under Root
-				"/Root/~~{type=element,variant=button}", // Elements with button variant under Root
-				"/Root/~~/~~",                    // All grandchildren
-				"/~~{version=2.0.0}",             // Nodes with version=2.0.0 at any level
-				"/Root/Child1/~~|/Root/Child2/~~" // All grandchildren via multiple selectors
+
+				// Relative path operators
+				"/Root/./*",                      // Stay at Root level, then select all children
+				"/Root/../*",                     // Go up from Root, select all at that level
+				"/Root/Child2/./GrandChild2",     // Current level no-op
+				"/Root/Child2/../Child1",         // Go to sibling via parent
+				"/Root/Child2/../*{variant=primary}", // Go up and filter by attribute
+				"/Root/Child2/GrandChild2/../../Child1", // Multiple parent operators
+				"/./*",                           // Current level at start
+				"/Root/Child1/../Child2/./GrandChild2", // Combined operators
+				"/Root/Child2/*/../*"             // Select children then their siblings via parent
 		};
 
 		for (String expression : expressions) {

@@ -15,6 +15,7 @@ public class TreeNode {
 	private String version;
 	private Map<String, String> attributes = new HashMap<>();
 	private List<TreeNode> children = new ArrayList<>();
+	private TreeNode parent;
 
 	public TreeNode(String name) {
 		this.name = name;
@@ -79,10 +80,15 @@ public class TreeNode {
 
 	public void addChild(TreeNode child) {
 		children.add(child);
+		child.parent = this;  // Set the parent reference
 	}
 
 	public List<TreeNode> getChildren() {
 		return children;
+	}
+
+	public TreeNode getParent() {
+		return parent;
 	}
 
 	@Override

@@ -10,10 +10,10 @@ import java.util.Set;
  */
 public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
-	private TreeNode rootNode;
+	private final TreeNode rootNode;
 	private List<TreeNode> currentNodes = new ArrayList<>();
-	private List<TreeNode> resultNodes = new ArrayList<>();
-	private Set<TreeNode> processedNodes = new HashSet<>();
+	private final List<TreeNode> resultNodes = new ArrayList<>();
+	private final Set<TreeNode> processedNodes = new HashSet<>();
 
 	public TreeSelectorListenerImpl(TreeNode rootNode) {
 		this.rootNode = rootNode;
@@ -26,12 +26,15 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 		processedNodes.clear();
 
 		// Handle the root part (first segment) of the path
-		if (ctx.nodeName() == null && ctx.wildcard() == null && ctx.placeholder() == null) {
+		if (ctx.nodeName() == null && ctx.wildcard() == null && ctx.placeholder() == null &&
+				ctx.currentNode() == null && ctx.parentNode() == null) {
 			return;
 		}
 
 		boolean isWildcard = ctx.wildcard() != null;
 		boolean isPlaceholder = ctx.placeholder() != null;
+		boolean isCurrentNode = ctx.currentNode() != null;
+		boolean isParentNode = ctx.parentNode() != null;
 
 		if (isWildcard) {
 			// Wildcard at root matches the root node itself
@@ -44,6 +47,12 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 				collectDescendantsRecursively(child, allNodes);
 			}
 			currentNodes.addAll(allNodes);
+		} else if (isCurrentNode) {
+			// Current node (.) - stay at the same level (root in this case)
+			currentNodes.add(rootNode);
+		} else if (isParentNode) {
+			// Parent node (..) - one level up from root would be nothing
+			// Root has no parent, so we leave currentNodes empty
 		} else {
 			// Named node at root
 			String rootName = ctx.nodeName().getText();
@@ -67,11 +76,14 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	public void enterNodeSelector(TreeSelectorParser.NodeSelectorContext ctx) {
 		List<TreeNode> matchingNodes = new ArrayList<>();
 
-		// Check if this is a wildcard, placeholder, or named node
+		// Check if this is a wildcard, placeholder, current node, parent node, or named node
 		boolean isWildcard = ctx.wildcard() != null;
 		boolean isPlaceholder = ctx.placeholder() != null;
+		boolean isCurrentNode = ctx.currentNode() != null;
+		boolean isParentNode = ctx.parentNode() != null;
 		String nodeName = isWildcard ? "*" : (isPlaceholder ? "~~" :
-				(ctx.nodeName() != null ? ctx.nodeName().getText() : ""));
+				isCurrentNode ? "." : isParentNode ? ".." :
+						(ctx.nodeName() != null ? ctx.nodeName().getText() : ""));
 
 		if (isPlaceholder) {
 			// For placeholder, we need to find all descendants of current nodes
@@ -82,10 +94,39 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 				collectDescendantsRecursivelyLocal(node, descendants, localProcessedNodes);
 				matchingNodes.addAll(descendants);
 			}
+		} else if (isCurrentNode) {
+			// Current node (.) - stay at the same level
+			matchingNodes.addAll(currentNodes);
+		} else if (isParentNode) {
+			// Parent node (..) - go up one level
+			boolean hasRootNode = false;
+
+			for (TreeNode node : currentNodes) {
+				TreeNode parent = node.getParent();
+				if (parent != null) {
+					matchingNodes.add(parent);
+				} else if (node == rootNode) {
+					// Special case: if we're looking for the parent of root,
+					// we'll mark that we have the root node but don't add it to matching nodes yet
+					hasRootNode = true;
+				}
+			}
+
+			// If we have the root node and we're going to apply wildcard next,
+			// we need special handling to ensure "/Root/../*" returns the root
+			if (hasRootNode && currentNodes.contains(rootNode)) {
+				// We're at the root level, so for parent level + wildcard,
+				// we need to make the root node available for wildcard selection
+				matchingNodes.add(null); // Special marker to handle root specially in wildcard
+			}
 		} else {
 			// For normal wildcard or named node
 			for (TreeNode node : currentNodes) {
-				if (isWildcard) {
+				if (node == null) {
+					// Special case for "/Root/../*": null marker means we're at the root's parent level
+					// and need to return the root node as a child of this level
+					matchingNodes.add(rootNode);
+				} else if (isWildcard) {
 					// Wildcard matches all children
 					matchingNodes.addAll(node.getChildren());
 				} else {
@@ -119,21 +160,22 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	}
 
 	/**
-	 * Recursively collect all descendants of a node (excluding the node itself).
-	 * Uses a local set of processed nodes to allow for chained placeholders.
+	 * Recursively collect all nodes in the tree.
 	 *
 	 * @param node The current node to process
-	 * @param descendants The list to collect descendants into
-	 * @param localProcessedNodes A local set to track processed nodes for this operation
+	 * @param allNodes The list to collect all nodes into
 	 */
-	private void collectDescendantsRecursivelyLocal(TreeNode node, List<TreeNode> descendants, Set<TreeNode> localProcessedNodes) {
+	private void collectNodesRecursively(TreeNode node, List<TreeNode> allNodes) {
+		// Prevent processing the same node twice
+		if (processedNodes.contains(node)) {
+			return;
+		}
+
+		processedNodes.add(node);
+		allNodes.add(node);
+
 		for (TreeNode child : node.getChildren()) {
-			// Prevent processing the same node twice within this collection operation
-			if (!localProcessedNodes.contains(child)) {
-				localProcessedNodes.add(child);
-				descendants.add(child);
-				collectDescendantsRecursivelyLocal(child, descendants, localProcessedNodes);
-			}
+			collectNodesRecursively(child, allNodes);
 		}
 	}
 
@@ -150,6 +192,25 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 				processedNodes.add(child);
 				descendants.add(child);
 				collectDescendantsRecursively(child, descendants);
+			}
+		}
+	}
+
+	/**
+	 * Recursively collect all descendants of a node (excluding the node itself).
+	 * Uses a local set of processed nodes to allow for chained placeholders.
+	 *
+	 * @param node The current node to process
+	 * @param descendants The list to collect descendants into
+	 * @param localProcessedNodes A local set to track processed nodes for this operation
+	 */
+	private void collectDescendantsRecursivelyLocal(TreeNode node, List<TreeNode> descendants, Set<TreeNode> localProcessedNodes) {
+		for (TreeNode child : node.getChildren()) {
+			// Prevent processing the same node twice within this collection operation
+			if (!localProcessedNodes.contains(child)) {
+				localProcessedNodes.add(child);
+				descendants.add(child);
+				collectDescendantsRecursivelyLocal(child, descendants, localProcessedNodes);
 			}
 		}
 	}
