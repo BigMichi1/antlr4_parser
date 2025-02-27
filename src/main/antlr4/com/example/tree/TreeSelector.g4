@@ -33,11 +33,16 @@ attributeName
 attributeValue
     : IDENTIFIER
     | STRING
+    | VERSION
     ;
 
 // Lexer rules
 IDENTIFIER
     : [a-zA-Z_][a-zA-Z0-9_]*
+    ;
+
+VERSION
+    : [0-9]+ ('.' [0-9]+)* // Matches version numbers like 1.0.0, 2.1, etc.
     ;
 
 STRING

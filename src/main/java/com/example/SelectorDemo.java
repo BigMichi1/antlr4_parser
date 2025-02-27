@@ -39,6 +39,12 @@ public class SelectorDemo {
 				"/Root/*{variant=primary}",
 				"/Root/*{visible=true}",
 
+				// Version attribute selectors
+				"/Root/*{version=2.0.0}",
+				"/*/*/*{version=3.0.0}",
+				"/Root{version=1.0.0}/Child2{version=2.1.0}/GrandChild1{version=3.2.0}",
+				"/Root/*{'version'='2.1.0'}",
+
 				// Combined selectors
 				"/Root/*{type=component}/GrandChild1",
 				"/*{type=container}/*/*{variant=button}"
@@ -52,6 +58,7 @@ public class SelectorDemo {
 			for (TreeNode node : result) {
 				System.out.println("- " + node +
 						(node.getVariant() != null ? " [variant: " + node.getVariant() + "]" : "") +
+						(node.getVersion() != null ? " [version: " + node.getVersion() + "]" : "") +
 						(!node.getAttributes().isEmpty() ? " [attrs: " + node.getAttributes() + "]" : ""));
 			}
 		}

@@ -12,6 +12,7 @@ public class TreeNode {
 	private String name;
 	private String type;
 	private String variant;
+	private String version;
 	private Map<String, String> attributes = new HashMap<>();
 	private List<TreeNode> children = new ArrayList<>();
 
@@ -23,6 +24,13 @@ public class TreeNode {
 		this.name = name;
 		this.type = type;
 		this.variant = variant;
+	}
+
+	public TreeNode(String name, String type, String variant, String version) {
+		this.name = name;
+		this.type = type;
+		this.variant = variant;
+		this.version = version;
 	}
 
 	public String getName() {
@@ -49,6 +57,14 @@ public class TreeNode {
 		this.variant = variant;
 	}
 
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
 	public void addAttribute(String key, String value) {
 		attributes.put(key, value);
 	}
@@ -71,6 +87,8 @@ public class TreeNode {
 
 	@Override
 	public String toString() {
-		return "TreeNode{name='" + name + "', type='" + type + "', variant='" + variant + "', children=" + children.size() + "}";
+		return "TreeNode{name='" + name + "', type='" + type + "', variant='" + variant +
+				(version != null ? "', version='" + version : "") +
+				"', children=" + children.size() + "}";
 	}
 }

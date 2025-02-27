@@ -118,6 +118,8 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 				filteredNodes.add(node);
 			} else if ("variant".equals(attrName) && attrValue.equals(node.getVariant())) {
 				filteredNodes.add(node);
+			} else if ("version".equals(attrName) && compareVersions(attrValue, node.getVersion())) {
+				filteredNodes.add(node);
 			} else if (attrValue.equals(node.getAttribute(attrName))) {
 				filteredNodes.add(node);
 			}
@@ -126,6 +128,24 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 		return filteredNodes;
 	}
 
+	/**
+	 * Compare version strings.
+	 *
+	 * @param selectorVersion Version from selector
+	 * @param nodeVersion Version from node
+	 * @return true if versions match, false otherwise
+	 */
+	private boolean compareVersions(String selectorVersion, String nodeVersion) {
+		if (selectorVersion == null || nodeVersion == null) {
+			return false;
+		}
+
+		// Direct string match
+		return selectorVersion.equals(nodeVersion);
+
+		// Note: This could be extended to support semantic version comparison
+		// like comparing major.minor.patch or using version ranges
+	}
 	/**
 	 * Clean an attribute value by removing surrounding quotes if present.
 	 *
