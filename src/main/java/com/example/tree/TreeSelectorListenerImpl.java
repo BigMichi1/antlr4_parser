@@ -100,7 +100,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	 * @param attrSelector The attribute selector containing multiple expressions
 	 * @return A filtered list of nodes that match all attribute expressions
 	 */
-	private List<TreeNode> filterNodesByAttributes(List<TreeNode> nodes, TreeSelectorParser.AttributeSelectorContext attrSelector) {
+	public List<TreeNode> filterNodesByAttributes(List<TreeNode> nodes, TreeSelectorParser.AttributeSelectorContext attrSelector) {
 		List<TreeNode> filteredNodes = new ArrayList<>();
 
 		// If there are no expressions, return the original list

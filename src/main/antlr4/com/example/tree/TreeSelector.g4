@@ -7,10 +7,15 @@ multiSelector
 
 selectorExpression
     : selector
+    | deepSelector
     ;
 
 selector
     : '/' (nodeName | wildcard) attributeSelector? (nodeSelector)*
+    ;
+
+deepSelector
+    : '**' '/' (nodeName | wildcard) attributeSelector? (nodeSelector)*
     ;
 
 nodeSelector

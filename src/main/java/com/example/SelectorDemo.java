@@ -35,15 +35,9 @@ public class SelectorDemo {
 				"/Root/*{type=component}",
 				"/Root/Child2{type=component}",
 				"/Root/*{variant=primary}",
-				"/Root/*{visible=true}",
-
-				// Version attribute selectors
-				"/Root/*{version=2.0.0}",
-				"/*/*/*{version=3.0.0}",
 
 				// Multiple attribute selectors
 				"/Root/*{type=component, variant=primary}",
-				"/Root/*{type=component, variant=secondary}",
 				"/Root/*{type=component, visible=true, variant=secondary}",
 
 				// Wildcard attribute value selectors
@@ -51,19 +45,22 @@ public class SelectorDemo {
 				"/Root/*{type=component,version=*}",
 				"/Root/*{type=*,variant=*,version=*}",
 
-				// Combined and nested selectors
-				"/Root/*{type=component}/GrandChild1",
-				"/*{type=container}/Child2/*{type=element, version=3.0.0}",
-
 				// Multiple selectors (pipe-separated)
 				"/Root/Child1|/Root/Child2",
-				"/Root/Child1|/Root/NonExistent",
 				"/Root/*{variant=primary}|/Root/*{variant=secondary}",
-				"/Root|/Root/Child1/GrandChild1|/Root/Child2/GrandChild2",
-				"/Root/*{type=component,variant=primary}|/Root/*{type=component,variant=secondary}",
+				"/Root/Child1/GrandChild1|/Root/Child2/GrandChild1|/Root/Child2/GrandChild2",
 
-				// Complex multiple selectors
-				"/Root/Child1/GrandChild1|/Root/Child2/GrandChild1|/Root/Child2/GrandChild2"
+				// Deep traversal selectors
+				"**/*",                           // Select all nodes in the tree
+				"**/Child2",                      // Select Child2 node
+				"**/*{variant=secondary}",        // Select nodes with variant=secondary
+				"**/GrandChild1",                 // Select all GrandChild1 nodes
+				"**/Child2{type=component}",      // Select Child2 with type=component
+				"**/*{version=3.0.0}",           // Select nodes with version=3.0.0
+				"**/Child2/GrandChild2",          // Select GrandChild2 under Child2
+				"**/*{type=element,variant=button}", // Select elements with button variant
+				"**/GrandChild1|**/GrandChild2",   // Combined deep traversal with multiple selectors
+				"**/*{type=element,variant=*}"     // Deep traversal with wildcard attribute
 		};
 
 		for (String expression : expressions) {

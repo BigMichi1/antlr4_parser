@@ -39,6 +39,11 @@ public class TreeSelector {
 			return new ArrayList<>();
 		}
 
+		// Check if selector starts with valid syntax (/ or **)
+		if (!(selectorExpression.startsWith("/") || selectorExpression.startsWith("**"))) {
+			return new ArrayList<>(); // Invalid syntax, return empty list
+		}
+
 		try {
 			// Create lexer and parser
 			TreeSelectorLexer lexer = new TreeSelectorLexer(CharStreams.fromString(selectorExpression));
@@ -53,20 +58,29 @@ public class TreeSelector {
 
 			// Process each selector expression
 			for (TreeSelectorParser.SelectorExpressionContext selectorExprContext : multiSelectorContext.selectorExpression()) {
-				TreeSelectorParser.SelectorContext selectorContext = selectorExprContext.selector();
+				if (selectorExprContext.selector() != null) {
+					// Regular selector
+					TreeSelectorParser.SelectorContext selectorContext = selectorExprContext.selector();
 
-				// Skip invalid selectors (those that don't start with /)
-				if (!selectorExpression.startsWith("/") && multiSelectorContext.selectorExpression().size() == 1) {
-					return new ArrayList<>();
+					// Create a listener to walk the parse tree for this selector
+					TreeSelectorListenerImpl listener = new TreeSelectorListenerImpl(rootNode);
+					ParseTreeWalker walker = new ParseTreeWalker();
+					walker.walk(listener, selectorContext);
+
+					// Add results from this selector to the set
+					resultSet.addAll(listener.getResultNodes());
+				} else if (selectorExprContext.deepSelector() != null) {
+					// Deep traversal selector
+					TreeSelectorParser.DeepSelectorContext deepSelectorContext = selectorExprContext.deepSelector();
+
+					// Create a deep listener to walk the parse tree for this selector
+					DeepTreeSelectorListenerImpl deepListener = new DeepTreeSelectorListenerImpl(rootNode);
+					ParseTreeWalker walker = new ParseTreeWalker();
+					walker.walk(deepListener, deepSelectorContext);
+
+					// Add results from this deep selector to the set
+					resultSet.addAll(deepListener.getResultNodes());
 				}
-
-				// Create a listener to walk the parse tree for this selector
-				TreeSelectorListenerImpl listener = new TreeSelectorListenerImpl(rootNode);
-				ParseTreeWalker walker = new ParseTreeWalker();
-				walker.walk(listener, selectorContext);
-
-				// Add results from this selector to the set
-				resultSet.addAll(listener.getResultNodes());
 			}
 
 			// Convert set to list to maintain the existing API
@@ -76,6 +90,7 @@ public class TreeSelector {
 			// Re-throw NullPointerException to maintain expected behavior
 			throw e;
 		} catch (Exception e) {
+			// This will catch RecognitionException and other parser errors
 			System.err.println("Error parsing selector expression: " + e.getMessage());
 			e.printStackTrace();
 			return new ArrayList<>();
