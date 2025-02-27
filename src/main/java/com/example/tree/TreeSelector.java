@@ -1,10 +1,11 @@
 package com.example.tree;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Main class for selecting nodes from a tree using selector expressions.
@@ -22,8 +23,19 @@ public class TreeSelector {
 	 *
 	 * @param selectorExpression the selector expression (e.g. "/Root/Child2")
 	 * @return a list of matching nodes
+	 * @throws NullPointerException if selectorExpression is null
 	 */
 	public List<TreeNode> select(String selectorExpression) {
+		// Explicitly check for null to ensure the NullPointerException is thrown consistently
+		if (selectorExpression == null) {
+			throw new NullPointerException("Selector expression cannot be null");
+		}
+
+		// Check for empty string or invalid format
+		if (selectorExpression.isEmpty() || !selectorExpression.startsWith("/")) {
+			return new ArrayList<>();
+		}
+
 		try {
 			// Create lexer and parser
 			TreeSelectorLexer lexer = new TreeSelectorLexer(CharStreams.fromString(selectorExpression));
@@ -40,6 +52,9 @@ public class TreeSelector {
 
 			// Return the result nodes
 			return listener.getResultNodes();
+		} catch (NullPointerException e) {
+			// Re-throw NullPointerException to maintain expected behavior
+			throw e;
 		} catch (Exception e) {
 			System.err.println("Error parsing selector expression: " + e.getMessage());
 			e.printStackTrace();

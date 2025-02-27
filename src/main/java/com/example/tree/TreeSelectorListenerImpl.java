@@ -21,7 +21,11 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 		currentNodes.clear();
 		resultNodes.clear();
 
-		// Get the root node name
+		// Safely get the root node name, return if it's null
+		if (ctx.nodeName() == null) {
+			return;
+		}
+
 		String rootName = ctx.nodeName().getText();
 		if (rootNode.getName().equals(rootName)) {
 			currentNodes.add(rootNode);
@@ -39,7 +43,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 		// Check if this is a wildcard
 		boolean isWildcard = ctx.wildcard() != null;
-		String nodeName = isWildcard ? "*" : ctx.nodeName().getText();
+		String nodeName = isWildcard ? "*" : (ctx.nodeName() != null ? ctx.nodeName().getText() : "");
 
 		for (TreeNode node : currentNodes) {
 			if (isWildcard) {
@@ -59,11 +63,13 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 		// Check if this is the last nodeSelector
 		TreeSelectorParser.SelectorContext parentCtx = (TreeSelectorParser.SelectorContext) ctx.getParent();
-		int lastNodeSelectorIndex = parentCtx.nodeSelector().size() - 1;
-		int currentIndex = parentCtx.nodeSelector().indexOf(ctx);
+		if (parentCtx != null) {
+			int lastNodeSelectorIndex = parentCtx.nodeSelector().size() - 1;
+			int currentIndex = parentCtx.nodeSelector().indexOf(ctx);
 
-		if (currentIndex == lastNodeSelectorIndex) {
-			resultNodes.addAll(matchingNodes);
+			if (currentIndex == lastNodeSelectorIndex) {
+				resultNodes.addAll(matchingNodes);
+			}
 		}
 	}
 
