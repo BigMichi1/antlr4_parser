@@ -1,8 +1,16 @@
 grammar TreeSelector;
 
 // Parser rules
+multiSelector
+    : selectorExpression ('|' selectorExpression)* EOF
+    ;
+
+selectorExpression
+    : selector
+    ;
+
 selector
-    : '/' (nodeName | wildcard) attributeSelector? (nodeSelector)* EOF
+    : '/' (nodeName | wildcard) attributeSelector? (nodeSelector)*
     ;
 
 nodeSelector

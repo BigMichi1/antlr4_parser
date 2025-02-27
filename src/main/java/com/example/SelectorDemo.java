@@ -45,21 +45,25 @@ public class SelectorDemo {
 				"/Root/*{type=component, variant=primary}",
 				"/Root/*{type=component, variant=secondary}",
 				"/Root/*{type=component, visible=true, variant=secondary}",
-				"/Root/*{version=2.0.0, type=component}",
-				"/Root/*{'type'='component', 'variant'='primary'}",
 
 				// Wildcard attribute value selectors
-				"/Root/*{type=*}",                      // Equivalent to /Root/*
-				"/Root/*{type=component,version=*}",    // Equivalent to /Root/*{type=component}
-				"/Root/*{type=*,variant=*,version=*}",  // Equivalent to /Root/*
-				"/Root/*{type=component,variant=*,version=2.0.0}",
-				"/*{type=*}/Child1/GrandChild1{version=3.0.0}",
-				"/Root/*{'type'='*','variant'='primary'}",
+				"/Root/*{type=*}",
+				"/Root/*{type=component,version=*}",
+				"/Root/*{type=*,variant=*,version=*}",
 
 				// Combined and nested selectors
 				"/Root/*{type=component}/GrandChild1",
 				"/*{type=container}/Child2/*{type=element, version=3.0.0}",
-				"/Root{type=container}/Child2{type=component, version=2.1.0}/GrandChild1{variant='button-alt'}"
+
+				// Multiple selectors (pipe-separated)
+				"/Root/Child1|/Root/Child2",
+				"/Root/Child1|/Root/NonExistent",
+				"/Root/*{variant=primary}|/Root/*{variant=secondary}",
+				"/Root|/Root/Child1/GrandChild1|/Root/Child2/GrandChild2",
+				"/Root/*{type=component,variant=primary}|/Root/*{type=component,variant=secondary}",
+
+				// Complex multiple selectors
+				"/Root/Child1/GrandChild1|/Root/Child2/GrandChild1|/Root/Child2/GrandChild2"
 		};
 
 		for (String expression : expressions) {
