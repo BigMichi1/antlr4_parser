@@ -11,7 +11,7 @@ selectorExpression
     ;
 
 selector
-    : '/' (nodeName | wildcard) attributeSelector? (nodeSelector)*
+    : '/' (nodeName | wildcard | placeholder) attributeSelector? (nodeSelector)*
     ;
 
 deepSelector
@@ -19,7 +19,7 @@ deepSelector
     ;
 
 nodeSelector
-    : '/' (nodeName | wildcard) attributeSelector?
+    : '/' (nodeName | wildcard | placeholder) attributeSelector?
     ;
 
 nodeName
@@ -28,6 +28,10 @@ nodeName
 
 wildcard
     : '*'
+    ;
+
+placeholder
+    : '~~'
     ;
 
 attributeSelector

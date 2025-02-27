@@ -1,7 +1,9 @@
 package com.example.tree;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A listener for the ANTLR-generated parse tree to process tree selector expressions.
@@ -11,6 +13,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	private TreeNode rootNode;
 	private List<TreeNode> currentNodes = new ArrayList<>();
 	private List<TreeNode> resultNodes = new ArrayList<>();
+	private Set<TreeNode> processedNodes = new HashSet<>();
 
 	public TreeSelectorListenerImpl(TreeNode rootNode) {
 		this.rootNode = rootNode;
@@ -20,17 +23,24 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	public void enterSelector(TreeSelectorParser.SelectorContext ctx) {
 		currentNodes.clear();
 		resultNodes.clear();
+		processedNodes.clear();
 
 		// Handle the root part (first segment) of the path
-		if (ctx.nodeName() == null && ctx.wildcard() == null) {
+		if (ctx.nodeName() == null && ctx.wildcard() == null && ctx.placeholder() == null) {
 			return;
 		}
 
 		boolean isWildcard = ctx.wildcard() != null;
+		boolean isPlaceholder = ctx.placeholder() != null;
 
 		if (isWildcard) {
 			// Wildcard at root matches the root node itself
 			currentNodes.add(rootNode);
+		} else if (isPlaceholder) {
+			// Placeholder at root - get all nodes in the tree
+			List<TreeNode> allNodes = new ArrayList<>();
+			collectNodesRecursively(rootNode, allNodes);
+			currentNodes.addAll(allNodes);
 		} else {
 			// Named node at root
 			String rootName = ctx.nodeName().getText();
@@ -54,19 +64,31 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	public void enterNodeSelector(TreeSelectorParser.NodeSelectorContext ctx) {
 		List<TreeNode> matchingNodes = new ArrayList<>();
 
-		// Check if this is a wildcard
+		// Check if this is a wildcard, placeholder, or named node
 		boolean isWildcard = ctx.wildcard() != null;
-		String nodeName = isWildcard ? "*" : (ctx.nodeName() != null ? ctx.nodeName().getText() : "");
+		boolean isPlaceholder = ctx.placeholder() != null;
+		String nodeName = isWildcard ? "*" : (isPlaceholder ? "~~" :
+				(ctx.nodeName() != null ? ctx.nodeName().getText() : ""));
 
-		for (TreeNode node : currentNodes) {
-			if (isWildcard) {
-				// Wildcard matches all children
-				matchingNodes.addAll(node.getChildren());
-			} else {
-				// Standard name matching
-				for (TreeNode child : node.getChildren()) {
-					if (child.getName().equals(nodeName)) {
-						matchingNodes.add(child);
+		if (isPlaceholder) {
+			// For placeholder, we need to find all descendants of current nodes
+			for (TreeNode node : currentNodes) {
+				List<TreeNode> descendants = new ArrayList<>();
+				collectDescendantsRecursively(node, descendants);
+				matchingNodes.addAll(descendants);
+			}
+		} else {
+			// For normal wildcard or named node
+			for (TreeNode node : currentNodes) {
+				if (isWildcard) {
+					// Wildcard matches all children
+					matchingNodes.addAll(node.getChildren());
+				} else {
+					// Standard name matching
+					for (TreeNode child : node.getChildren()) {
+						if (child.getName().equals(nodeName)) {
+							matchingNodes.add(child);
+						}
 					}
 				}
 			}
@@ -87,6 +109,43 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 			if (currentIndex == lastNodeSelectorIndex) {
 				resultNodes.addAll(matchingNodes);
+			}
+		}
+	}
+
+	/**
+	 * Recursively collect all nodes in the tree.
+	 *
+	 * @param node The current node to process
+	 * @param allNodes The list to collect all nodes into
+	 */
+	private void collectNodesRecursively(TreeNode node, List<TreeNode> allNodes) {
+		// Prevent processing the same node twice
+		if (processedNodes.contains(node)) {
+			return;
+		}
+
+		processedNodes.add(node);
+		allNodes.add(node);
+
+		for (TreeNode child : node.getChildren()) {
+			collectNodesRecursively(child, allNodes);
+		}
+	}
+
+	/**
+	 * Recursively collect all descendants of a node (excluding the node itself).
+	 *
+	 * @param node The current node to process
+	 * @param descendants The list to collect descendants into
+	 */
+	private void collectDescendantsRecursively(TreeNode node, List<TreeNode> descendants) {
+		for (TreeNode child : node.getChildren()) {
+			// Prevent processing the same node twice
+			if (!processedNodes.contains(child)) {
+				processedNodes.add(child);
+				descendants.add(child);
+				collectDescendantsRecursively(child, descendants);
 			}
 		}
 	}
