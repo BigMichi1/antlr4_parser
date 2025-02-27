@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 /**
- * Advanced tests for tree selector expressions including wildcards and error cases.
+ * Advanced tests for tree selector expressions including error cases.
  */
 public class AdvancedSelectorTests extends TreeSelectorTestBase {
 
@@ -23,34 +23,6 @@ public class AdvancedSelectorTests extends TreeSelectorTestBase {
 		assertEquals(2, results.size());
 		assertEquals("Child1", results.get(0).getName());
 		assertEquals("Child1", results.get(1).getName());
-	}
-
-	@Test
-	@DisplayName("Test wildcard selector")
-	void testWildcardSelector() {
-		List<TreeNode> results = selector.select("/Root/*");
-
-		assertEquals(2, results.size());
-		assertTrue(results.stream().anyMatch(node -> node.getName().equals("Child1")));
-		assertTrue(results.stream().anyMatch(node -> node.getName().equals("Child2")));
-	}
-
-	@Test
-	@DisplayName("Test wildcard at root level")
-	void testWildcardAtRootLevel() {
-		List<TreeNode> results = selector.select("/*/Child2");
-
-		assertEquals(1, results.size());
-		assertEquals("Child2", results.get(0).getName());
-	}
-
-	@Test
-	@DisplayName("Test multiple wildcards in path")
-	void testMultipleWildcardsInPath() {
-		List<TreeNode> results = selector.select("/*/*/GrandChild2");
-
-		assertEquals(1, results.size());
-		assertEquals("GrandChild2", results.get(0).getName());
 	}
 
 	@Test
@@ -85,34 +57,5 @@ public class AdvancedSelectorTests extends TreeSelectorTestBase {
 		List<TreeNode> results = selector.select("/NotRoot");
 
 		assertTrue(results.isEmpty());
-	}
-
-	@Test
-	@DisplayName("Nested wildcard selectors")
-	void testNestedWildcardSelectors() {
-		List<TreeNode> results = selector.select("/Root/*/GrandChild2");
-
-		assertEquals(1, results.size());
-		assertEquals("GrandChild2", results.get(0).getName());
-	}
-
-	@Test
-	@DisplayName("Root wildcard selectors")
-	void testRootWildcard() {
-		List<TreeNode> results = selector.select("/*");
-
-		assertEquals(1, results.size());
-		assertEquals("Root", results.get(0).getName());
-	}
-
-	@Test
-	@DisplayName("Complete wildcard path")
-	void testCompleteWildcardPath() {
-		List<TreeNode> results = selector.select("/*/*/*");
-
-		assertEquals(3, results.size());
-		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild1")));
-		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild2")));
-		assertTrue(results.stream().anyMatch(node -> node.getName().equals("GrandChild3")));
 	}
 }

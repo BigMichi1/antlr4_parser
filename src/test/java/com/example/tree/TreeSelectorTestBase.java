@@ -20,11 +20,15 @@ public class TreeSelectorTestBase {
 		TreeNode child2 = new TreeNode("Child2", "component", "secondary");
 		child2.addAttribute("visible", "true");
 
-		TreeNode grandchild1 = new TreeNode("GrandChild1", "element", "button");
+		TreeNode grandchild1_1 = new TreeNode("GrandChild1", "element", "button");
 		TreeNode grandchild2 = new TreeNode("GrandChild2", "element", "text");
 		TreeNode grandchild3 = new TreeNode("GrandChild3", "element", "input");
 
-		child1.addChild(grandchild1);
+		// Create another GrandChild1 node for Child2
+		TreeNode grandchild1_2 = new TreeNode("GrandChild1", "element", "button-alt");
+
+		child1.addChild(grandchild1_1);
+		child2.addChild(grandchild1_2); // Add GrandChild1 to Child2
 		child2.addChild(grandchild2);
 		child2.addChild(grandchild3);
 

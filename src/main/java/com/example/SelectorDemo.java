@@ -25,10 +25,14 @@ public class SelectorDemo {
 				"/Root/Child2",
 				"/Root/*",
 				"/Root/Child2/GrandChild2",
-				// New wildcard expressions
+				// Wildcard expressions
 				"/*/Child2",
 				"/*/*/GrandChild2",
-				"/*/*/*"
+				"/*/*/*",
+				// GrandChild1 selectors
+				"/Root/*/GrandChild1",      // Should find both GrandChild1 nodes
+				"/Root/Child1/GrandChild1", // Should find one GrandChild1
+				"/Root/Child2/GrandChild1"  // Should find one GrandChild1
 		};
 
 		for (String expression : expressions) {
@@ -37,7 +41,7 @@ public class SelectorDemo {
 
 			System.out.println("Result nodes (" + result.size() + "):");
 			for (TreeNode node : result) {
-				System.out.println("- " + node);
+				System.out.println("- " + node + (node.getVariant() != null ? " [variant: " + node.getVariant() + "]" : ""));
 			}
 		}
 	}
