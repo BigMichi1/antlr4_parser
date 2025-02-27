@@ -48,10 +48,18 @@ public class SelectorDemo {
 				"/Root/*{version=2.0.0, type=component}",
 				"/Root/*{'type'='component', 'variant'='primary'}",
 
+				// Wildcard attribute value selectors
+				"/Root/*{type=*}",                      // Equivalent to /Root/*
+				"/Root/*{type=component,version=*}",    // Equivalent to /Root/*{type=component}
+				"/Root/*{type=*,variant=*,version=*}",  // Equivalent to /Root/*
+				"/Root/*{type=component,variant=*,version=2.0.0}",
+				"/*{type=*}/Child1/GrandChild1{version=3.0.0}",
+				"/Root/*{'type'='*','variant'='primary'}",
+
 				// Combined and nested selectors
 				"/Root/*{type=component}/GrandChild1",
 				"/*{type=container}/Child2/*{type=element, version=3.0.0}",
-				"/Root{type=container}/Child2{type=component, version=2.1.0}/GrandChild1{variant=button-alt}"
+				"/Root{type=container}/Child2{type=component, version=2.1.0}/GrandChild1{variant='button-alt'}"
 		};
 
 		for (String expression : expressions) {

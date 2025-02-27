@@ -94,6 +94,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	/**
 	 * Filter nodes based on multiple attribute expressions.
 	 * A node matches only if it matches ALL attribute expressions.
+	 * An attribute with value "*" is treated as a wildcard and always matches.
 	 *
 	 * @param nodes The list of nodes to filter
 	 * @param attrSelector The attribute selector containing multiple expressions
@@ -115,6 +116,11 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 			for (TreeSelectorParser.AttributeExprContext exprCtx : attrSelector.attributeExpr()) {
 				String attrName = cleanAttributeValue(exprCtx.attributeName().getText());
 				String attrValue = cleanAttributeValue(exprCtx.attributeValue().getText());
+
+				// If attribute value is "*", treat it as a wildcard (always matches)
+				if ("*".equals(attrValue)) {
+					continue; // Skip this attribute check, equivalent to ignoring it
+				}
 
 				// Check if the node matches this specific attribute expression
 				boolean matchesThisAttribute = false;

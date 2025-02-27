@@ -34,6 +34,7 @@ attributeValue
     : IDENTIFIER
     | STRING
     | VERSION
+    | wildcard  // Allow wildcard as an attribute value
     ;
 
 // Lexer rules
