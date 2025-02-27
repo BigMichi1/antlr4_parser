@@ -20,19 +20,28 @@ public class SelectorDemo {
 
 		// Test various selector expressions
 		String[] expressions = {
+				// Basic selectors
 				"/Root",
 				"/Root/Child1",
 				"/Root/Child2",
+
+				// Wildcard selectors
 				"/Root/*",
 				"/Root/Child2/GrandChild2",
-				// Wildcard expressions
 				"/*/Child2",
 				"/*/*/GrandChild2",
-				"/*/*/*",
-				// GrandChild1 selectors
-				"/Root/*/GrandChild1",      // Should find both GrandChild1 nodes
-				"/Root/Child1/GrandChild1", // Should find one GrandChild1
-				"/Root/Child2/GrandChild1"  // Should find one GrandChild1
+
+				// Attribute selectors
+				"/Root/*{type=component}",
+				"/Root/Child2{type=component}",
+				"/Root/Child2{type=foo}",
+				"/Root/*{'type'='component'}",
+				"/Root/*{variant=primary}",
+				"/Root/*{visible=true}",
+
+				// Combined selectors
+				"/Root/*{type=component}/GrandChild1",
+				"/*{type=container}/*/*{variant=button}"
 		};
 
 		for (String expression : expressions) {
@@ -41,7 +50,9 @@ public class SelectorDemo {
 
 			System.out.println("Result nodes (" + result.size() + "):");
 			for (TreeNode node : result) {
-				System.out.println("- " + node + (node.getVariant() != null ? " [variant: " + node.getVariant() + "]" : ""));
+				System.out.println("- " + node +
+						(node.getVariant() != null ? " [variant: " + node.getVariant() + "]" : "") +
+						(!node.getAttributes().isEmpty() ? " [attrs: " + node.getAttributes() + "]" : ""));
 			}
 		}
 	}

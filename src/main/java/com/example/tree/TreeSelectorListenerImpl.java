@@ -39,6 +39,11 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 			}
 		}
 
+		// Apply attribute selector if present
+		if (ctx.attributeSelector() != null) {
+			currentNodes = filterNodesByAttribute(currentNodes, ctx.attributeSelector());
+		}
+
 		// If there are no nodeSelectors, the current nodes are the result
 		if (ctx.nodeSelector().isEmpty()) {
 			resultNodes.addAll(currentNodes);
@@ -67,6 +72,11 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 			}
 		}
 
+		// Apply attribute selector if present
+		if (ctx.attributeSelector() != null) {
+			matchingNodes = filterNodesByAttribute(matchingNodes, ctx.attributeSelector());
+		}
+
 		currentNodes = matchingNodes;
 
 		// Check if this is the last nodeSelector
@@ -79,6 +89,54 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 				resultNodes.addAll(matchingNodes);
 			}
 		}
+	}
+
+	/**
+	 * Filter a list of nodes based on attribute selectors.
+	 *
+	 * @param nodes The list of nodes to filter
+	 * @param attrSelector The attribute selector from the parse tree
+	 * @return A filtered list of nodes that match the attribute selector
+	 */
+	private List<TreeNode> filterNodesByAttribute(List<TreeNode> nodes, TreeSelectorParser.AttributeSelectorContext attrSelector) {
+		List<TreeNode> filteredNodes = new ArrayList<>();
+
+		TreeSelectorParser.AttributeExprContext exprCtx = attrSelector.attributeExpr();
+		if (exprCtx == null) {
+			return nodes; // No filtering needed
+		}
+
+		// Get attribute name (remove quotes if present)
+		String attrName = cleanAttributeValue(exprCtx.attributeName().getText());
+
+		// Get attribute value (remove quotes if present)
+		String attrValue = cleanAttributeValue(exprCtx.attributeValue().getText());
+
+		// Filter nodes based on the attribute name and value
+		for (TreeNode node : nodes) {
+			if ("type".equals(attrName) && attrValue.equals(node.getType())) {
+				filteredNodes.add(node);
+			} else if ("variant".equals(attrName) && attrValue.equals(node.getVariant())) {
+				filteredNodes.add(node);
+			} else if (attrValue.equals(node.getAttribute(attrName))) {
+				filteredNodes.add(node);
+			}
+		}
+
+		return filteredNodes;
+	}
+
+	/**
+	 * Clean an attribute value by removing surrounding quotes if present.
+	 *
+	 * @param value The raw attribute value from the parser
+	 * @return The cleaned attribute value
+	 */
+	private String cleanAttributeValue(String value) {
+		if (value.startsWith("'") && value.endsWith("'")) {
+			return value.substring(1, value.length() - 1);
+		}
+		return value;
 	}
 
 	public List<TreeNode> getResultNodes() {
