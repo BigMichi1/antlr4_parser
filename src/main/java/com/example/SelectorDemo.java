@@ -15,6 +15,9 @@ public class SelectorDemo {
 		TreeNode root = TreeBuilder.createSampleTree();
 		TreeSelector selector = new TreeSelector(root);
 
+		// Visualize the tree structure
+		TreeBuilder.printTree(root);
+
 		// Test various selector expressions
 		String[] expressions = {
 				"/Root",
