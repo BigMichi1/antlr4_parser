@@ -18,7 +18,7 @@ wildcard
     ;
 
 attributeSelector
-    : '{' attributeExpr '}'
+    : '{' attributeExpr (',' attributeExpr)* '}'
     ;
 
 attributeExpr

@@ -31,23 +31,27 @@ public class SelectorDemo {
 				"/*/Child2",
 				"/*/*/GrandChild2",
 
-				// Attribute selectors
+				// Single attribute selectors
 				"/Root/*{type=component}",
 				"/Root/Child2{type=component}",
-				"/Root/Child2{type=foo}",
-				"/Root/*{'type'='component'}",
 				"/Root/*{variant=primary}",
 				"/Root/*{visible=true}",
 
 				// Version attribute selectors
 				"/Root/*{version=2.0.0}",
 				"/*/*/*{version=3.0.0}",
-				"/Root{version=1.0.0}/Child2{version=2.1.0}/GrandChild1{version=3.2.0}",
-				"/Root/*{'version'='2.1.0'}",
 
-				// Combined selectors
+				// Multiple attribute selectors
+				"/Root/*{type=component, variant=primary}",
+				"/Root/*{type=component, variant=secondary}",
+				"/Root/*{type=component, visible=true, variant=secondary}",
+				"/Root/*{version=2.0.0, type=component}",
+				"/Root/*{'type'='component', 'variant'='primary'}",
+
+				// Combined and nested selectors
 				"/Root/*{type=component}/GrandChild1",
-				"/*{type=container}/*/*{variant=button}"
+				"/*{type=container}/Child2/*{type=element, version=3.0.0}",
+				"/Root{type=container}/Child2{type=component, version=2.1.0}/GrandChild1{variant=button-alt}"
 		};
 
 		for (String expression : expressions) {

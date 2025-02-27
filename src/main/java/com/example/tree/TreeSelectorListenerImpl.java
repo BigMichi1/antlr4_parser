@@ -41,7 +41,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 		// Apply attribute selector if present
 		if (ctx.attributeSelector() != null) {
-			currentNodes = filterNodesByAttribute(currentNodes, ctx.attributeSelector());
+			currentNodes = filterNodesByAttributes(currentNodes, ctx.attributeSelector());
 		}
 
 		// If there are no nodeSelectors, the current nodes are the result
@@ -74,7 +74,7 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 		// Apply attribute selector if present
 		if (ctx.attributeSelector() != null) {
-			matchingNodes = filterNodesByAttribute(matchingNodes, ctx.attributeSelector());
+			matchingNodes = filterNodesByAttributes(matchingNodes, ctx.attributeSelector());
 		}
 
 		currentNodes = matchingNodes;
@@ -92,35 +92,52 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 	}
 
 	/**
-	 * Filter a list of nodes based on attribute selectors.
+	 * Filter nodes based on multiple attribute expressions.
+	 * A node matches only if it matches ALL attribute expressions.
 	 *
 	 * @param nodes The list of nodes to filter
-	 * @param attrSelector The attribute selector from the parse tree
-	 * @return A filtered list of nodes that match the attribute selector
+	 * @param attrSelector The attribute selector containing multiple expressions
+	 * @return A filtered list of nodes that match all attribute expressions
 	 */
-	private List<TreeNode> filterNodesByAttribute(List<TreeNode> nodes, TreeSelectorParser.AttributeSelectorContext attrSelector) {
+	private List<TreeNode> filterNodesByAttributes(List<TreeNode> nodes, TreeSelectorParser.AttributeSelectorContext attrSelector) {
 		List<TreeNode> filteredNodes = new ArrayList<>();
 
-		TreeSelectorParser.AttributeExprContext exprCtx = attrSelector.attributeExpr();
-		if (exprCtx == null) {
-			return nodes; // No filtering needed
+		// If there are no expressions, return the original list
+		if (attrSelector.attributeExpr().isEmpty()) {
+			return nodes;
 		}
 
-		// Get attribute name (remove quotes if present)
-		String attrName = cleanAttributeValue(exprCtx.attributeName().getText());
-
-		// Get attribute value (remove quotes if present)
-		String attrValue = cleanAttributeValue(exprCtx.attributeValue().getText());
-
-		// Filter nodes based on the attribute name and value
+		// For each node, check if it matches ALL attribute expressions
 		for (TreeNode node : nodes) {
-			if ("type".equals(attrName) && attrValue.equals(node.getType())) {
-				filteredNodes.add(node);
-			} else if ("variant".equals(attrName) && attrValue.equals(node.getVariant())) {
-				filteredNodes.add(node);
-			} else if ("version".equals(attrName) && compareVersions(attrValue, node.getVersion())) {
-				filteredNodes.add(node);
-			} else if (attrValue.equals(node.getAttribute(attrName))) {
+			boolean matchesAllAttributes = true;
+
+			// Check each attribute expression
+			for (TreeSelectorParser.AttributeExprContext exprCtx : attrSelector.attributeExpr()) {
+				String attrName = cleanAttributeValue(exprCtx.attributeName().getText());
+				String attrValue = cleanAttributeValue(exprCtx.attributeValue().getText());
+
+				// Check if the node matches this specific attribute expression
+				boolean matchesThisAttribute = false;
+
+				if ("type".equals(attrName) && attrValue.equals(node.getType())) {
+					matchesThisAttribute = true;
+				} else if ("variant".equals(attrName) && attrValue.equals(node.getVariant())) {
+					matchesThisAttribute = true;
+				} else if ("version".equals(attrName) && compareVersions(attrValue, node.getVersion())) {
+					matchesThisAttribute = true;
+				} else if (attrValue.equals(node.getAttribute(attrName))) {
+					matchesThisAttribute = true;
+				}
+
+				// If any attribute expression doesn't match, the node doesn't match
+				if (!matchesThisAttribute) {
+					matchesAllAttributes = false;
+					break;
+				}
+			}
+
+			// Add node only if it matches all attribute expressions
+			if (matchesAllAttributes) {
 				filteredNodes.add(node);
 			}
 		}
@@ -142,10 +159,8 @@ public class TreeSelectorListenerImpl extends TreeSelectorBaseListener {
 
 		// Direct string match
 		return selectorVersion.equals(nodeVersion);
-
-		// Note: This could be extended to support semantic version comparison
-		// like comparing major.minor.patch or using version ranges
 	}
+
 	/**
 	 * Clean an attribute value by removing surrounding quotes if present.
 	 *
